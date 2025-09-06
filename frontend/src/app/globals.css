@@ -75,7 +75,7 @@
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.65 0 0);
 }
 
 .dark {
@@ -119,4 +119,22 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.text-gradient-brand {
+  background: linear-gradient(to right, #8BC34A, #00A3B2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan-purple {
+  background: linear-gradient(to right, #00A3B2, #A020F0); /* Darker cyan to deeper purple */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple-green {
+  background: linear-gradient(to right, #A020F0, #8BC34A); /* Deeper purple to muted green */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

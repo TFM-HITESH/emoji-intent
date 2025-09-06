@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
+import { motion } from "framer-motion";
 
 export function Hero() {
   return (
@@ -11,24 +12,54 @@ export function Hero() {
         className="absolute inset-0 pointer-events-none z-5"
         style={{
           background:
-            'radial-gradient(ellipse at center 30%, transparent 50%, rgba(0,0,0,0.8) 100%)',
+            "radial-gradient(ellipse at center 30%, transparent 50%, rgba(0,0,0,0.8) 100%)",
         }}
       ></div>
-      <h1 className="text-4xl md:text-6xl font-bold text-white z-10">
+      <motion.h1
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-4xl md:text-6xl font-bold text-white z-10"
+      >
         The Modern API for <br />
-        <span className="text-primary">Intent Detection</span>
-      </h1>
-      <p className="max-w-2xl mx-auto my-8 text-lg text-neutral-300 z-10">
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, y: [0, -2, 0] }}
+          transition={{ duration: 0.8, delay: 0.2, y: { duration: 3, repeat: Infinity, repeatType: "mirror" } }}
+          style={{
+            background: "linear-gradient(to right, #22D3EE, #D946EF)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Intent Detection
+        </motion.span>
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="max-w-2xl mx-auto my-8 text-lg text-neutral-300 z-10"
+      >
         Understand user intent, even with emojis. Our API provides real-time
         analysis of messages to detect harassment, abuse, and more, ensuring
         safe online interactions.
-      </p>
-      <a
+      </motion.p>
+      <motion.a
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
         href="/register"
-        className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 rounded-md font-semibold z-10"
+        className="px-6 py-3 rounded-md font-semibold z-10"
+        style={{
+          background: "linear-gradient(to right, #D946EF, #F97316)",
+          color: "white",
+        }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
         Get API Key
-      </a>
+      </motion.a>
     </div>
   );
 }

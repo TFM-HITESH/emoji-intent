@@ -7,7 +7,7 @@ import { Footer } from "@/components/landing/Footer";
 
 export default function HomePage() {
   return (
-    <main className="bg-background text-foreground">
+    <main className="bg-background text-foreground overflow-x-clip">
       <Navbar />
       <Hero />
       <Features />

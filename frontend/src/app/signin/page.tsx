@@ -3,7 +3,9 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import GlobeComponent from "@/components/ui/globe";
+import dynamic from "next/dynamic";
+
+const GlobeComponent = dynamic(() => import("@/components/ui/globe"), { ssr: false });
 import { cn } from "@/lib/utils";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";

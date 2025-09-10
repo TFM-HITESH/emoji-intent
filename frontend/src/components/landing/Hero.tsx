@@ -25,7 +25,11 @@ export function Hero() {
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, y: [0, -2, 0] }}
-          transition={{ duration: 0.8, delay: 0.2, y: { duration: 3, repeat: Infinity, repeatType: "mirror" } }}
+          transition={{
+            duration: 0.8,
+            delay: 0.2,
+            y: { duration: 3, repeat: Infinity, repeatType: "mirror" },
+          }}
           style={{
             background: "linear-gradient(to right, #22D3EE, #D946EF)",
             WebkitBackgroundClip: "text",
@@ -49,7 +53,7 @@ export function Hero() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.6 }}
-        href="/register"
+        href="/login"
         className="px-6 py-3 rounded-md font-semibold z-10"
         style={{
           background: "linear-gradient(to right, #D946EF, #F97316)",

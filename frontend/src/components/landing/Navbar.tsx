@@ -31,7 +31,11 @@ const Navbar = () => {
               href="/"
               className="text-2xl font-bold text-gradient-brand"
               animate={{ y: [0, -2, 0] }}
-              transition={{ duration: 3, repeat: Infinity, repeatType: "mirror" }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                repeatType: "mirror",
+              }}
             >
               Intent API
             </motion.a>
@@ -51,7 +55,7 @@ const Navbar = () => {
             </div>
           </div>
           <div className="hidden md:block">
-            <Link href="/register">
+            <Link href="/login">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -101,7 +105,7 @@ const Navbar = () => {
           </div>
           <div className="pt-4 pb-3 border-t border-border">
             <div className="flex items-center px-5">
-              <Link href="/register">
+              <Link href="/login">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

@@ -9,9 +9,10 @@ const features = [
     name: "Advanced Harrassment Detection",
     description:
       "Our AI model is trained to detect subtle forms of harrassment and abuse in text, ensuring a safer online environment.",
-    highlight: "subtle forms",
+    highlight: "subtle forms of harrassment and abuse",
     icon: <ShieldCheck className="w-12 h-12" />,
     gradient: "linear-gradient(to right, #22D3EE, #D946EF)",
+    glowColor: "rgba(34, 211, 238, 0.4)", // Cyan glow
   },
   {
     name: "Emoji Intent Analysis",
@@ -20,6 +21,7 @@ const features = [
     highlight: "intent behind emojis",
     icon: <Smile className="w-12 h-12" />,
     gradient: "linear-gradient(to right, #D946EF, #F97316)",
+    glowColor: "rgba(217, 70, 239, 0.4)", // Purple glow
   },
   {
     name: "Real-Time Processing",
@@ -28,6 +30,7 @@ const features = [
     highlight: "instant feedback on messages",
     icon: <Zap className="w-12 h-12" />,
     gradient: "linear-gradient(to right, #F97316, #BEF264)",
+    glowColor: "rgba(249, 115, 22, 0.4)", // Orange glow
   },
   {
     name: "Multi-lingual Support",
@@ -36,6 +39,7 @@ const features = [
     highlight: "detect intent across multiple languages",
     icon: <Globe className="w-12 h-12" />,
     gradient: "linear-gradient(to right, #BEF264, #22D3EE)",
+    glowColor: "rgba(190, 242, 100, 0.4)", // Green glow
   },
   {
     name: "Easy Integration",
@@ -44,14 +48,16 @@ const features = [
     highlight: "stateless API into your application in minutes",
     icon: <Cpu className="w-12 h-12" />,
     gradient: "linear-gradient(to right, #22D3EE, #F97316)",
+    glowColor: "rgba(34, 211, 238, 0.4)", // Cyan glow
   },
   {
     name: "Scalable and Reliable",
     description:
       "Built on a robust infrastructure, our API is designed to handle millions of requests without compromising on performance.",
-    highlight: "handle millions of requests",
+    highlight: "designed to handle millions of requests",
     icon: <Scaling className="w-12 h-12" />,
     gradient: "linear-gradient(to right, #D946EF, #BEF264)",
+    glowColor: "rgba(217, 70, 239, 0.4)", // Purple glow
   },
 ];
 
@@ -87,9 +93,17 @@ export function Features() {
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative p-px rounded-lg overflow-hidden"
-              style={{ background: feature.gradient }}
+              className="relative p-px rounded-lg" // Removed overflow-hidden
+              style={{ background: "oklch(0.25 0 0)" }} // Muted monochrome normally
+              animate={{ boxShadow: "0 0 0px 0px rgba(0,0,0,0)" }} // Default no shadow
+              whileHover={{
+                background: feature.gradient, // Colorful on hover
+                boxShadow: `0 0 10px 3px ${feature.glowColor}, 0 0 20px 6px ${feature.glowColor}`, // Dynamic color neon glow
+              }}
+              transition={{
+                background: { duration: 0.5, ease: "easeOut" },
+                boxShadow: { duration: 0.5, ease: "easeOut" }, // Transition for boxShadow
+              }}
             >
               <div className="bg-card p-6 rounded-lg h-full w-full">
                 <div
@@ -98,7 +112,11 @@ export function Features() {
                 >
                   <motion.div
                     animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, repeatType: "mirror" }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      repeatType: "mirror",
+                    }}
                   >
                     {feature.icon}
                   </motion.div>
@@ -115,22 +133,22 @@ export function Features() {
                         {i <
                           feature.description.split(feature.highlight).length -
                             1 && (
-                          <PointerHighlight
-                            rectangleClassName={`leading-loose`}
-                            pointerClassName={`h-3 w-3`}
-                            containerClassName="inline-block mx-1"
+                          // <PointerHighlight
+                          //   rectangleClassName={`leading-loose`}
+                          //   pointerClassName={`h-3 w-3`}
+                          //   containerClassName="inline-block mx-1"
+                          // >
+                          <span
+                            className="relative z-10 font-bold text-xl"
+                            style={{
+                              background: feature.gradient,
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                            }}
                           >
-                            <span
-                              className="relative z-10"
-                              style={{
-                                background: feature.gradient,
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                              }}
-                            >
-                              {feature.highlight}
-                            </span>
-                          </PointerHighlight>
+                            {feature.highlight}
+                          </span>
+                          // </PointerHighlight>
                         )}
                       </React.Fragment>
                     ))}

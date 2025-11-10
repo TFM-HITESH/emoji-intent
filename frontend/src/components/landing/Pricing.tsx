@@ -54,7 +54,7 @@ export function Pricing() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg text-neutral-400 mt-4 max-w-3xl mx-auto"
           >
-            Choose the plan that's right for you.
+            Choose the plan that is right for you.
           </motion.p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">

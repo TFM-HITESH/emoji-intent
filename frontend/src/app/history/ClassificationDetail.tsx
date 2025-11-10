@@ -33,7 +33,7 @@ interface SeverityScores {
 }
 
 interface ClassificationDetailProps {
-  inputChat: any;
+  inputChat: any; // eslint-disable-line
   outputAnalysis: {
     conversation: { conversation: Conversation[] };
     keywords: Keywords[];

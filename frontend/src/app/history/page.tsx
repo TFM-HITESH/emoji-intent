@@ -16,8 +16,8 @@ import ClassificationDetail from "./ClassificationDetail";
 interface ClassificationRecord {
   record_id: string;
   user_email: string;
-  input_chat: any;
-  output_analysis: any;
+  input_chat: any; // eslint-disable-line
+  output_analysis: any; // eslint-disable-line
   created_at: string;
 }
 

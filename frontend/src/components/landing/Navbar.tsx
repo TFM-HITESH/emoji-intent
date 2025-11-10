@@ -43,10 +43,28 @@ const Navbar = () => {
     { name: "Features", href: "#features" },
     { name: "API", href: "#api" },
     { name: "Pricing", href: "#pricing" },
-  ].map((link) => ({
-    ...link,
-    href: pathname === "/" ? link.href : `/${link.href}`,
-  }));
+  ];
+
+  const loggedInNavLinks = user
+    ? [
+        { name: "Classify", href: "/classify" },
+        { name: "History", href: "/history" },
+      ]
+    : [];
+
+  const allNavLinks = navLinks.concat(loggedInNavLinks).map((link) => {
+    if (link.href.startsWith("#")) {
+      return {
+        ...link,
+        href: pathname === "/" ? link.href : `/${link.href}`,
+      };
+    } else {
+      return {
+        ...link,
+        href: link.href,
+      };
+    }
+  });
 
   return (
     <motion.nav
@@ -73,7 +91,7 @@ const Navbar = () => {
           </div>
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              {navLinks.map((link) => (
+              {allNavLinks.map((link) => (
                 <NavLink
                   key={link.name}
                   href={link.href}
@@ -99,12 +117,6 @@ const Navbar = () => {
                 <DropdownMenuContent>
                   <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Link href="/classify">Classify</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/history">History</Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     Logout
                   </DropdownMenuItem>
@@ -148,7 +160,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden" id="mobile-menu">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
+            {allNavLinks.map((link) => (
               <NavLink
                 key={link.name}
                 href={link.href}
@@ -178,20 +190,6 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="mt-3 space-y-1">
-                    <Link
-                      href="/classify"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Classify
-                    </Link>
-                    <Link
-                      href="/history"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      History
-                    </Link>
                     <button
                       onClick={() => {
                         handleLogout();

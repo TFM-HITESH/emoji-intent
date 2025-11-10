@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 const tiers = [
   {
     name: "Developer",
-    price: "$0",
+    price: "Rs. 0",
     frequency: "/month",
     description: "For personal projects and testing.",
     features: ["1,000 requests/month", "Community support", "Basic analytics"],
@@ -82,11 +82,18 @@ export function Pricing() {
                 <ul className="mt-8 space-y-4 flex-grow">
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-center">
-                                            <motion.div
+                      <motion.div
                         animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 3, repeat: Infinity, repeatType: "mirror" }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          repeatType: "mirror",
+                        }}
                       >
-                        <Check className="w-5 h-5" style={{ color: "#BEF264" }} />
+                        <Check
+                          className="w-5 h-5"
+                          style={{ color: "#BEF264" }}
+                        />
                       </motion.div>
                       <span className="text-neutral-300">{feature}</span>
                     </li>

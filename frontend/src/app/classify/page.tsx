@@ -6,21 +6,11 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Shield, ChevronsRight, AlertTriangle, Info } from "lucide-react";
 import { classifyConversation } from "./actions";
+import Navbar from "@/components/landing/Navbar";
+import ConversationBuilder from "@/components/ConversationBuilder"; // Import ConversationBuilder
+import { useEffect } from "react"; // Import useEffect
 
-// Updated Types
-interface Reply {
-  id: string;
-  author: string;
-  message: string;
-  replies: Reply[];
-}
-
-interface Conversation {
-  id: string;
-  author: string;
-  message: string;
-  replies: Reply[];
-}
+import { Reply, Conversation } from "@/types/conversation";
 
 interface Keywords {
   id: string;
@@ -57,85 +47,185 @@ const initialJsonInput = `{
           "id": "2",
           "author": "Mark",
           "message": "This is awesome! I've been looking for something like this. The UI is so clean. Great job! 👏",
-          "replies": [
-            {
-              "id": "3",
-              "author": "Sarah",
-              "message": "Thanks, Mark! Let me know if you have any feature requests.",
-              "replies": []
-            }
-          ]
-        },
-        {
-          "id": "4",
-          "author": "Tom",
-          "message": "I tried to run it, but I'm getting a 'segmentation fault'. I'm on Ubuntu 22.04. Is this a known issue? 😥",
-          "replies": [
-            {
-              "id": "5",
-              "author": "Sarah",
-              "message": "Oh no! I haven't seen that before. Can you open an issue on GitHub with the steps to reproduce? I'll take a look ASAP.",
-              "replies": [
-                {
-                  "id": "6",
-                  "author": "Tom",
-                  "message": "Will do. Thanks for the quick response!",
-                  "replies": []
-                }
-              ]
-            }
-          ]
+          "replies": []
         }
       ]
     },
     {
-      "id": "7",
+      "id": "3",
       "author": "Jane",
       "message": "This is a total piece of garbage. It doesn't even work. Don't waste your time. 😠",
       "replies": [
         {
-          "id": "8",
+          "id": "4",
           "author": "Peter",
-          "message": "Hey, that's not very constructive. The author is just trying to share their work. Maybe you could provide some more details about what's not working?",
-          "replies": [
-            {
-              "id": "9",
-              "author": "Jane",
-              "message": "Why should I? It's not my job to debug their crappy code. It should just work. 🖕",
-              "replies": [
-                {
-                  "id": "10",
-                  "author": "Admin",
-                  "message": "Jane, please keep the conversation civil. This is a warning.",
-                  "replies": []
-                }
-              ]
-            }
-          ]
+          "message": "Hey, that's not very constructive. The author is just trying to share their work.",
+          "replies": []
+        },
+        {
+          "id": "5",
+          "author": "Admin",
+          "message": "Jane, please keep the conversation civil. This is a warning.",
+          "replies": []
         }
       ]
     }
   ]
 }`;
 
+const emptyJsonInput = JSON.stringify({ conversation: [] }, null, 2);
+
+const testConversationData = JSON.parse(initialJsonInput).conversation;
+
+// InputMessageNode component (similar to the one in ClassificationDetail.tsx)
+const InputMessageNode = ({
+  msg,
+  depth = 0,
+}: {
+  msg: Conversation | Reply;
+  depth?: number;
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const depthColors = [
+    "bg-muted/50",
+    "bg-muted/40",
+    "bg-muted/30",
+    "bg-muted/20",
+    "bg-muted/10",
+    "bg-muted/5",
+    "bg-muted/0",
+  ];
+  const bgColor = depthColors[Math.min(depth, depthColors.length - 1)];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`ml-4 pl-4 border-l border-border mt-2`}
+    >
+      <div className={`${bgColor} p-4 rounded-lg`}>
+        <div className="flex justify-between items-center">
+          <p className="font-semibold text-primary">{msg.author}</p>
+          {msg.replies && msg.replies.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+            >
+              {isCollapsed ? "+" : "-"}
+            </Button>
+          )}
+        </div>
+        <p className="text-foreground/80 mt-1">{msg.message}</p>
+      </div>
+      {!isCollapsed && msg.replies && msg.replies.length > 0 && (
+        <div className="mt-2">
+          {msg.replies.map((reply) => (
+            <InputMessageNode key={reply.id} msg={reply} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
 export default function ClassifyPage() {
-  const [jsonInput, setJsonInput] = useState<string>(initialJsonInput);
+  const [jsonInput, setJsonInput] = useState<string>(emptyJsonInput);
+  const [interactiveConversation, setInteractiveConversation] = useState<
+    Conversation[]
+  >([]); // New state for interactive builder
   const [conversation, setConversation] = useState<Conversation[] | null>(null);
   const [keywords, setKeywords] = useState<Keywords[] | null>(null);
   const [severity, setSeverity] = useState<SeverityScores[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInputJsonView, setIsInputJsonView] = useState(true); // Renamed from isJsonView for clarity
+  const [isOutputJsonView, setIsOutputJsonView] = useState(false); // New state for output view
+  const [isValidInput, setIsValidInput] = useState(false); // New state for input validity
+
+  // Helper to validate conversation input
+  const validateConversation = (input: string | Conversation[]) => {
+    if (typeof input === "string") {
+      try {
+        const parsed = JSON.parse(input);
+        return (
+          parsed &&
+          Array.isArray(parsed.conversation) &&
+          parsed.conversation.length > 0
+        );
+      } catch (e) {
+        return false;
+      }
+    } else {
+      return Array.isArray(input) && input.length > 0;
+    }
+  };
+
+  // Initialize interactiveConversation from initialJsonInput
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(emptyJsonInput);
+      if (parsed && parsed.conversation) {
+        setInteractiveConversation(parsed.conversation);
+      }
+    } catch (e) {
+      console.error(
+        "Failed to parse initial JSON input for interactive builder:",
+        e
+      );
+    }
+  }, []);
+
+  // Update jsonInput whenever interactiveConversation changes
+  useEffect(() => {
+    const newJson = JSON.stringify(
+      { conversation: interactiveConversation },
+      null,
+      2
+    );
+    setJsonInput(newJson);
+    setIsValidInput(validateConversation(interactiveConversation));
+  }, [interactiveConversation]);
+
+  // Validate jsonInput whenever it changes
+  useEffect(() => {
+    if (isInputJsonView) {
+      setIsValidInput(validateConversation(jsonInput));
+    }
+  }, [jsonInput, isInputJsonView]);
+
+  const handleLoadTestConversation = () => {
+    setJsonInput(initialJsonInput);
+    setInteractiveConversation(testConversationData);
+  };
 
   const handleProcess = async () => {
+    if (!isValidInput) {
+      setError(
+        "Please provide a valid conversation in the correct format. Current conversation is either empty or malformed."
+      );
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
-      const data = JSON.parse(jsonInput);
-      const result = await classifyConversation(data) as { conversation: { conversation: Conversation[] }, keywords: Keywords[], severity: SeverityScores[] };
+      let dataToProcess;
+      if (isInputJsonView) {
+        dataToProcess = JSON.parse(jsonInput);
+      } else {
+        dataToProcess = { conversation: interactiveConversation };
+      }
+      const result = (await classifyConversation(dataToProcess)) as {
+        conversation: { conversation: Conversation[] };
+        keywords: Keywords[];
+        severity: SeverityScores[];
+      };
       setConversation(result.conversation.conversation);
       setKeywords(result.keywords);
       setSeverity(result.severity);
     } catch (e) {
+      console.error(e);
       setError("Invalid JSON format or error during processing.");
       setConversation(null);
       setKeywords(null);
@@ -423,68 +513,119 @@ export default function ClassifyPage() {
   };
 
   return (
-    <div className="bg-background min-h-screen text-foreground p-8">
-      <header className="text-center mb-12">
-        <h1 className="text-5xl font-bold tracking-tight text-gradient-cyan-purple">
-          Agentic AI Intent Classifier
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Analyze threaded conversations to detect intent, emotion, and harmful
-          content.
-        </p>
-      </header>
+    <>
+      <Navbar />
+      <div className="bg-background min-h-screen text-foreground p-8">
+        <header className="text-center mb-12">
+          <h1 className="text-5xl font-bold tracking-tight text-gradient-cyan-purple">
+            Agentic AI Intent Classifier
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Analyze threaded conversations to detect intent, emotion, and
+            harmful content.
+          </p>
+        </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-primary">
-              1. Input Conversation (JSON)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TextareaAutosize
-              value={jsonInput}
-              onChange={(e) => setJsonInput(e.target.value)}
-              className="w-full bg-input border-border text-foreground font-mono text-sm p-2 rounded-md min-h-[100px] max-h-[500px] resize-none"
-              placeholder="Paste your conversation JSON here..."
-            />
-            <Button
-              onClick={handleProcess}
-              className="mt-4 w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? "Processing..." : "Process Conversation"}
-            </Button>
-            {error && <p className="text-destructive mt-2">{error}</p>}
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-primary">
+                1. Input Conversation
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsInputJsonView(!isInputJsonView)}
+              >
+                {isInputJsonView
+                  ? "Toggle to Human Readable View"
+                  : "Toggle to JSON View"}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {isInputJsonView ? (
+                <TextareaAutosize
+                  value={jsonInput}
+                  onChange={(e) => setJsonInput(e.target.value)}
+                  className="w-full bg-input border-border text-foreground font-mono text-sm p-2 rounded-md text-wrap resize-none"
+                  placeholder="Paste your conversation JSON here..."
+                />
+              ) : (
+                <ConversationBuilder
+                  initialConversation={interactiveConversation}
+                  onConversationChange={setInteractiveConversation}
+                />
+              )}
+              <Button
+                onClick={handleProcess}
+                className="mt-4 w-full"
+                disabled={isLoading || !isValidInput}
+              >
+                {isLoading ? "Processing..." : "Process Conversation"}
+              </Button>
+              <Button
+                onClick={handleLoadTestConversation}
+                className="mt-2 w-full"
+                variant="outline"
+              >
+                Load Test Conversation/Thread
+              </Button>{" "}
+              {error && <p className="text-destructive mt-2">{error}</p>}
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-primary">2. Visualized Output</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {conversation ? (
-              <div>
-                {conversation.map((thread) => (
-                  <MessageNode
-                    key={thread.id}
-                    msg={thread}
-                    keywordData={keywords?.find((k) => k.id === thread.id)}
-                    severityData={severity?.find((s) => s.id === thread.id)}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-primary">
+                2. Visualized Output
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsOutputJsonView(!isOutputJsonView)}
+                disabled={!conversation} // Disable if no conversation is processed yet
+              >
+                {isOutputJsonView
+                  ? "Toggle to Human Readable View"
+                  : "Toggle to JSON View"}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {conversation ? (
+                isOutputJsonView ? (
+                  <TextareaAutosize
+                    value={JSON.stringify(
+                      { conversation, keywords, severity },
+                      null,
+                      2
+                    )}
+                    readOnly
+                    className="w-full bg-input border-border text-foreground font-mono text-sm p-2 rounded-md text-wrap resize-none"
+                    minRows={10}
                   />
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">
-                  Results will be displayed here.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ) : (
+                  <div>
+                    {conversation.map((thread) => (
+                      <MessageNode
+                        key={thread.id}
+                        msg={thread}
+                        keywordData={keywords?.find((k) => k.id === thread.id)}
+                        severityData={severity?.find((s) => s.id === thread.id)}
+                      />
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">
+                    Results will be displayed here.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

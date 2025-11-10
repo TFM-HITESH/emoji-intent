@@ -1,7 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import GlobeComponent from "@/components/ui/globe";
 import { cn } from "@/lib/utils";
@@ -34,10 +33,15 @@ const LabelInputContainer = ({
 };
 
 export default function LoginPage() {
-  const router = useRouter();
+  const supabase = createClient();
 
-  const handleSignIn = (provider: string) => {
-    signIn(provider, { callbackUrl: "/testchat" });
+  const handleSignIn = async (provider: "github" | "google") => {
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${location.origin}/auth/callback?next=/classify`,
+      },
+    });
   };
 
   return (

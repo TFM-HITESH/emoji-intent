@@ -1,21 +1,52 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import NavLink from "../NavLink";
+import { createClient } from "@/lib/supabase/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User } from "@supabase/supabase-js";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isHoveredMobileButton, setIsHoveredMobileButton] =
     React.useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   const navLinks = [
     { name: "Features", href: "#features" },
     { name: "API", href: "#api" },
     { name: "Pricing", href: "#pricing" },
-  ];
+  ].map((link) => ({
+    ...link,
+    href: pathname === "/" ? link.href : `/${link.href}`,
+  }));
 
   return (
     <motion.nav
@@ -55,19 +86,45 @@ const Navbar = () => {
             </div>
           </div>
           <div className="hidden md:block">
-            <Link href="/login">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-md text-sm font-medium"
-                style={{
-                  background: "linear-gradient(to right, #FF8C00, #A020F0)",
-                  color: "white",
-                }}
-              >
-                Get Started
-              </motion.button>
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Avatar>
+                    <AvatarImage src={user.user_metadata.avatar_url} />
+                    <AvatarFallback>
+                      {user.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Link href="/classify">Classify</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href="/history">History</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 rounded-md text-sm font-medium"
+                  style={{
+                    background: "linear-gradient(to right, #FF8C00, #A020F0)",
+                    color: "white",
+                  }}
+                >
+                  Get Started
+                </motion.button>
+              </Link>
+            )}
           </div>
           <div className="-mr-2 flex md:hidden">
             <button
@@ -105,16 +162,59 @@ const Navbar = () => {
           </div>
           <div className="pt-4 pb-3 border-t border-border">
             <div className="flex items-center px-5">
-              <Link href="/login">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full px-4 py-2 rounded-md text-sm font-medium"
-                  style={{ backgroundColor: "#F97316", color: "white" }}
-                >
-                  Get Started
-                </motion.button>
-              </Link>
+              {user ? (
+                <div className="w-full">
+                  <div className="flex items-center">
+                    <Avatar>
+                      <AvatarImage src={user.user_metadata.avatar_url} />
+                      <AvatarFallback>
+                        {user.email?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="ml-3">
+                      <p className="text-base font-medium text-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    <Link
+                      href="/classify"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Classify
+                    </Link>
+                    <Link
+                      href="/history"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      History
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-accent"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link href="/login" className="w-full">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full px-4 py-2 rounded-md text-sm font-medium"
+                    style={{ backgroundColor: "#F97316", color: "white" }}
+                  >
+                    Get Started
+                  </motion.button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

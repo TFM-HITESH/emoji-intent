@@ -62,7 +62,7 @@ export function Hero() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        Get API Key
+        Get API Access
       </motion.a>
     </div>
   );
